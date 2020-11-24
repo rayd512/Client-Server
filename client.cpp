@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 
 	check_input(argc, argv);
 	string log_name = get_logname();
-	cout << log_name << endl;
+	// cout << log_name << endl;
 	//Create socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -51,11 +51,10 @@ int main(int argc, char* argv[]) {
 	FILE* fp = fopen(log_name.c_str(), "w+");
 	fprintf(fp, "Using port %s\n", argv[1]);
 	fprintf(fp, "Using server address %s\n", argv[2]);
-	fprintf(fp, "Host %s\n", log_name.c_str());
+	fprintf(fp, "Host%s\n", log_name.c_str());
 
 	while(true) {
 		memset(message, 0, 1000);
-		printf("Enter message : ");
 		if (scanf("%s", message) != 1) {
 			break;
 		}

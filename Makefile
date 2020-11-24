@@ -19,6 +19,7 @@ server.o: server.cpp
 tands.o: tands.c
 	$(CC) $(CFLAGS) -c tands.c -o tands.o 
 
-
+logs:
+	$(RM) *.[0-9]*
 clean:
 	$(RM) client server *.[0-9]* *.o
