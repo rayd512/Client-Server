@@ -2,6 +2,7 @@ CC=g++
 CFLAGS=-Wall -O -std=c++11
 # OBJECTS=client.o
 
+all:client server
 
 client: client.o tands.o
 	$(CC) -o client client.o tands.o
@@ -20,4 +21,4 @@ tands.o: tands.c
 
 
 clean:
-	$(RM) client server *.o
+	$(RM) client server *.[0-9]* *.o

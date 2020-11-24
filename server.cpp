@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <utility>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -13,7 +15,10 @@ using namespace std;
 
 void check_input(int argc, char* argv[]);
 void Trans( int n );
-void log_output(string log_name, int trans_time, int trans_num);
+void log_output(string log_name, int trans_time, int trans_num, string mode);
+void inc_tracker(vector<pair<string, int> > client_tracker, string log_name);
+void write_summary(vector<pair<string, int> > client_tracker,
+				   double start_time, double end_time, int trans_num);
 double get_epoch_time();
 
 int main(int argc, char *argv[]) {
@@ -21,10 +26,11 @@ int main(int argc, char *argv[]) {
 	int socket_desc, client_sock[MAX_CON], c, read_size, max_sd,
 		monitor, trans_num = 0;
 	struct sockaddr_in server, client;
-	char client_message[1000];
+	char client_message[1000], reply[1000];
 	struct timeval timeout = {30, 0};
 	fd_set sock_set;
-
+	vector<pair<string, int> > client_tracker;
+	double start_time = 0, end_time = 0;
 	check_input(argc, argv);
 
 	for(int i = 0; i < MAX_CON; i++) {
@@ -87,8 +93,9 @@ int main(int argc, char *argv[]) {
 		if (monitor < 0) {
 			cout << "Error: Select error" << endl;
 		} else if (monitor == 0) {
-			cout << "Timeout" << endl;
+			// cout << "Timeout" << endl;
 			close(socket_desc);
+			write_summary(client_tracker, start_time, end_time, trans_num);
 			exit(EXIT_SUCCESS);
 		}
 
@@ -121,27 +128,40 @@ int main(int argc, char *argv[]) {
 
 			memset(client_message, 0, 1000);
 			if ((read_size = recv(sd, client_message, 1000, 0)) > 0 ) {
-				trans_num++;
 				string transaction, log_name;
 				string message = string(client_message);
 				istringstream stream(message);
 
-				stream >> transaction >> message;
+				stream >> transaction >> log_name;
+
+				inc_tracker(client_tracker, log_name);
 
 				int trans_time = stoi(transaction.substr(1,
 														transaction.size()-1));
 				// cout << trans_time << endl;
-				log_output(log_name, trans_time, trans_num);
+				trans_num++;
+				log_output(log_name, trans_time, trans_num, "Trans");
 				Trans(trans_time);
+				log_output(log_name, trans_time, trans_num, "Done");
 				//Send the message back to client
-				printf( "Client recv: %s\n", client_message );
-				if(write(sd, client_message, strlen(client_message)) == -1) {
+				// printf( "Client recv: %s\n", client_message );
+
+				if(trans_num == 1) {
+					start_time = get_epoch_time();
+				}
+				end_time = get_epoch_time();
+
+
+				sprintf(reply, "Done %d", trans_num);
+
+				if(write(sd, reply, strlen(reply)) == -1) {
 					perror("Error: Writing Failed");
 					exit(EXIT_FAILURE);
 				}
 				
-				printf( "Client sent: %s\n", client_message );
+				// printf( "Client sent: %s\n", client_message );
 				memset(client_message, 0, 1000);
+				memset(reply, 0, 1000);
 			}
 			
 			if(read_size == 0) {
@@ -178,14 +198,56 @@ void check_input(int argc, char* argv[]) {
 	}
 }
 
-void log_output(string log_name, int trans_time, int trans_num) {
-	printf("%.2f\n", get_epoch_time());
+void log_output(string log_name, int trans_time, int trans_num, string mode) {
+	if(mode == "Done") {
+		printf("%.2f: # %2d (Done) from %s\n", get_epoch_time(),
+											trans_num, log_name.c_str());
+	} else {
+		printf("%.2f: # %2d (T%3d) from %s\n", get_epoch_time(),
+									trans_num, trans_time, log_name.c_str());
+	}
 }
 
 double get_epoch_time() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
-	cout << tv.tv_usec << endl;
 	return (double) (tv.tv_sec) + (double) (tv.tv_usec) / 1000000;
+}
+
+void inc_tracker(vector<pair<string, int> > client_tracker, string log_name) {
+	bool is_tracked = false;
+	for(int i = 0; i < (int)client_tracker.size(); i++) {
+		if(client_tracker[i].first == log_name) {
+			client_tracker[i].second++;
+			is_tracked = true;
+			break;
+		}
+	}
+	if(!is_tracked) {
+		pair <string, int> new_client;
+		new_client.first = log_name;
+		new_client.second = 1;
+		client_tracker.push_back(new_client);
+	}
+}
+
+void write_summary(vector<pair<string, int> > client_tracker,
+				   double start_time, double end_time, int trans_num) {
+	double elapsed_time;
+
+	cout << endl;
+	cout << "SUMMARY" << endl;
+	for(int i = 0; i < (int)client_tracker.size(); i++) {
+		printf("%4d transactions from %s\n", client_tracker[i].second,
+											 client_tracker[i].first.c_str());
+	}
+	if (end_time == start_time) {
+		elapsed_time = get_epoch_time() - start_time;
+	} else {
+		elapsed_time = (double)end_time - (double)start_time;
+	}
+	// printf("%.2f %.2f\n",end_time, start_time );
+	printf("%4.1f transactions/sec (%d/%.2f) \n",
+			trans_num/elapsed_time, trans_num, elapsed_time);
 }
