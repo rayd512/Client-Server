@@ -9,7 +9,7 @@ server \- A server to handle requests from multiple clients
 The server will use the specified port given to it on startup and will
 listen for any clients wanting to connect using that port. Once a client
 connects, the server will handle any transactions the client sends to it
-and will write to STDOUT all requests recieved and then finished.
+and will write to STDOUT all requests received and then finished.
 .SH EXAMPLES
 Start server on port 5002:
 \[char46]/server 5002
