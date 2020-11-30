@@ -18,12 +18,17 @@ server.o: server.cpp
 
 tands.o: tands.c
 	$(CC) $(CFLAGS) -c tands.c -o tands.o 
+
 pdf: clientpdf serverpdf
+
 clientpdf:
 	groff -m man -Tpdf client.groff > client.pdf
+
 serverpdf:
 	groff -m man -Tpdf server.groff > server.pdf
+
 logs:
 	$(RM) *.[0-9]*
+
 clean:
 	$(RM) client server *.[0-9]* *.o *.pdf
