@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall -O -std=c++11
-# OBJECTS=client.o
+
 
 all:client server pdf
 

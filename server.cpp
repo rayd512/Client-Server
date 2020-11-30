@@ -1,3 +1,5 @@
+// This code contains modified code from:
+// binarytides.com/server-client-example-c-sockets-linux/
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -19,8 +21,8 @@ using namespace std;
 void check_input(int argc, char* argv[]);
 void Trans( int n );
 void log_output(string log_name, int trans_time, int trans_num, string mode);
-void inc_tracker(vector<pair<string, int> > client_tracker, string log_name);
-void write_summary(vector<pair<string, int> > client_tracker,
+void inc_tracker(vector<pair<string, int> > &client_tracker, string log_name);
+void write_summary(vector<pair<string, int> > &client_tracker,
 				   double start_time, double end_time, int trans_num);
 double get_epoch_time();
 
@@ -79,14 +81,14 @@ int main(int argc, char *argv[]) {
 
 		// Add socket descriptors into the set
 		for(int i = 0; i < MAX_CON; i++) {
-			int child_sd = client_sock[i];
+			int new_sd = client_sock[i];
 
-			if(child_sd > 0) {
-				FD_SET(child_sd, &sock_set);
+			if(new_sd > 0) {
+				FD_SET(new_sd, &sock_set);
 			}
 
-			if(child_sd > max_sd) {
-				max_sd = child_sd;
+			if(new_sd > max_sd) {
+				max_sd = new_sd;
 			}
 		}
 
@@ -107,10 +109,10 @@ int main(int argc, char *argv[]) {
 		if (FD_ISSET(socket_desc, &sock_set)) {
 
 			// Accept a new connection
-			int child_sock = accept(socket_desc, (struct sockaddr *)&client,
+			int new_sock = accept(socket_desc, (struct sockaddr *)&client,
 								(socklen_t*)&c);
 
-			if (child_sock < 0) {
+			if (new_sock < 0) {
 				perror("Error: Accept Failed");
 				exit(EXIT_FAILURE);
 			}
@@ -118,7 +120,7 @@ int main(int argc, char *argv[]) {
 			// Add new socket to first empty place
 			for(int i = 0; i < MAX_CON; i++) {
 				if(client_sock[i] == 0) {
-					client_sock[i] = child_sock;
+					client_sock[i] = new_sock;
 					break;
 				}
 			}
@@ -231,7 +233,7 @@ double get_epoch_time() {
 }
 
 // Increments the amount of transactions each connected client has requested
-void inc_tracker(vector<pair<string, int> > client_tracker, string log_name) {
+void inc_tracker(vector<pair<string, int> > &client_tracker, string log_name) {
 	bool is_tracked = false;
 	// Increment client's transaction amount if in vector
 	for(int i = 0; i < (int)client_tracker.size(); i++) {
@@ -251,13 +253,13 @@ void inc_tracker(vector<pair<string, int> > client_tracker, string log_name) {
 }
 
 // Write the summary when server ends
-void write_summary(vector<pair<string, int> > client_tracker,
+void write_summary(vector<pair<string, int> > &client_tracker,
 				   double start_time, double end_time, int trans_num) {
 	double elapsed_time;
+	double trans_rate;
 
 	cout << endl;
 	cout << "SUMMARY" << endl;
-	
 	// Output client stats 
 	for(int i = 0; i < (int)client_tracker.size(); i++) {
 		printf("%4d transactions from %s\n", client_tracker[i].second,
@@ -265,14 +267,19 @@ void write_summary(vector<pair<string, int> > client_tracker,
 	}
 	
 	// Get the elapsed time. 
-	if (end_time == start_time) {
+	if (end_time == start_time && start_time != 0) {
 		// Case if only one transaction happens. Grab the current time
-		elapsed_time = get_epoch_time() - start_time;
+		elapsed_time = get_epoch_time() - (double)start_time;
+		trans_rate = trans_num/elapsed_time;
+	} else if (end_time == start_time) {
+		elapsed_time = 0;
+		trans_rate = 0;
 	} else {
 		elapsed_time = (double)end_time - (double)start_time;
+		trans_rate = trans_num/elapsed_time;
 	}
 
 	// print the trans/sec
 	printf("%4.1f transactions/sec (%d/%.2f) \n",
-			trans_num/elapsed_time, trans_num, elapsed_time);
+			trans_rate, trans_num, elapsed_time);
 }

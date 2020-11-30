@@ -1,3 +1,5 @@
+// This code contains modified code from:
+// binarytides.com/server-client-example-c-sockets-linux/
 #include <iostream>
 #include <string>
 #include <sstream>
