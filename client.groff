@@ -27,6 +27,7 @@ Start client to connect to ip-address 127.0.0.1 and port 5002:
 .sp
 .br
 Sample Input Once Connected:
+.br
 T80
 .br
 S90
@@ -35,7 +36,7 @@ T100
 .SH OPTIONS
 No options
 .SH SEE ALSO
-socket(2) select(2) inet(3) client(7)
+socket(2) inet(3) server(7)
 .SH BUGS
 No known bugs.
 .SH AUTHOR
