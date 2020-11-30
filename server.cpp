@@ -28,7 +28,7 @@ double get_epoch_time();
 
 int main(int argc, char *argv[]) {
 	// Init variables
-	int socket_desc, client_sock[MAX_CON], c, read_size, max_sd,
+	int socket_desc, c, read_size, max_sd,
 		monitor, trans_num = 0;
 	struct sockaddr_in server, client;
 	char client_message[1000], reply[1000];
@@ -36,12 +36,10 @@ int main(int argc, char *argv[]) {
 	fd_set sock_set;
 	vector<pair<string, int> > client_tracker;
 	double start_time = 0, end_time = 0;
+	vector<int> client_sock;
 	
 	// Check validity of input passed from command line
 	check_input(argc, argv);
-
-	// Initialize array with zeroes
-	fill(begin(client_sock), end(client_sock), 0);
 
 	//Create socket
 	socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,12 +78,9 @@ int main(int argc, char *argv[]) {
 		max_sd = socket_desc;
 
 		// Add socket descriptors into the set
-		for(int i = 0; i < MAX_CON; i++) {
+		for(int i = 0; i < (int)client_sock.size(); i++) {
 			int new_sd = client_sock[i];
-
-			if(new_sd > 0) {
-				FD_SET(new_sd, &sock_set);
-			}
+			FD_SET(new_sd, &sock_set);
 
 			if(new_sd > max_sd) {
 				max_sd = new_sd;
@@ -117,17 +112,16 @@ int main(int argc, char *argv[]) {
 				exit(EXIT_FAILURE);
 			}
 
-			// Add new socket to first empty place
-			for(int i = 0; i < MAX_CON; i++) {
-				if(client_sock[i] == 0) {
-					client_sock[i] = new_sock;
-					break;
-				}
+			// Add new socket to vector
+			if((int)client_sock.size() <= MAX_CON) {
+				client_sock.push_back(new_sock);
+			} else {
+				cout << "Too many connections" << endl;
 			}
 		}
 		
 		// Check for available data on other sd's
-		for(int i = 0; i < MAX_CON; i++) {
+		for(int i = 0; i < (int)client_sock.size(); i++) {
 			// Get sd and check for data availability
 			int sd = client_sock[i];
 			if (!FD_ISSET(sd, &sock_set))
@@ -182,8 +176,8 @@ int main(int argc, char *argv[]) {
 			if(read_size == 0) {
 				// Client has disconnected
 				close(sd);
-				// Clear the spot in the array
-				client_sock[i] = 0;
+				// Remove from vector
+				client_sock.erase(client_sock.begin()+i);
 			}
 			else if(read_size == -1) {
 				perror("Error: recv failed");

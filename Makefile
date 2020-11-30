@@ -32,4 +32,7 @@ logs:
 	$(RM) *.[0-9]*
 
 clean:
+	$(RM) client server *.o
+
+cleanall:
 	$(RM) client server *.[0-9]* *.o *.pdf
