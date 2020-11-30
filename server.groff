@@ -1,0 +1,23 @@
+.\" Manpage for server.
+.\" Contact rdizon@ualberta.ca to correct errors or typos.
+.TH man 7 "Nov. 24, 2020" "1.0" "server man page"
+.SH NAME
+server \- A server to handle requests from multiple clients
+.SH SYNOPSIS
+\[char46]/server <port>
+.SH DESCRIPTION
+The server will use the specified port given to it on startup and will
+listen for any clients wanting to connect using that port. Once a client
+connects, the server will handle any transactions the client sends to it
+and will write to STDOUT all requests recieved and then finished.
+.SH EXAMPLES
+Start server on port 5002:
+\[char46]/server 5002
+.SH OPTIONS
+No options
+.SH SEE ALSO
+socket(2) select(2) inet(3) client(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Raynard Dizon (rdizon@ualberta.ca)

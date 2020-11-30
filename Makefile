@@ -2,7 +2,7 @@ CC=g++
 CFLAGS=-Wall -O -std=c++11
 # OBJECTS=client.o
 
-all:client server
+all:client server pdf
 
 client: client.o tands.o
 	$(CC) -o client client.o tands.o
@@ -18,8 +18,12 @@ server.o: server.cpp
 
 tands.o: tands.c
 	$(CC) $(CFLAGS) -c tands.c -o tands.o 
-
+pdf: clientpdf serverpdf
+clientpdf:
+	groff -m man -Tpdf client.groff > client.pdf
+serverpdf:
+	groff -m man -Tpdf server.groff > server.pdf
 logs:
 	$(RM) *.[0-9]*
 clean:
-	$(RM) client server *.[0-9]* *.o
+	$(RM) client server *.[0-9]* *.o *.pdf

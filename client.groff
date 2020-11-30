@@ -1,0 +1,42 @@
+.\" Manpage for client.
+.\" Contact rdizon@ualberta.ca to correct errors or typos.
+.TH man 7 "Nov. 24, 2020" "1.0" "client man page"
+.SH NAME
+client \- A client that will connect to a server on a specified port and ip-adress
+.SH SYNOPSIS
+\[char46]/client <port> <ip-adress>
+.SH DESCRIPTION
+The client will connect to a server on a specified ip-address and port. Once 
+successfully connect, the client can then begin to send "transactions" to 
+the server to be executed by the server. To send a transaction it is
+defined as:
+.br
+T<n> Transaction. The parameter is an integer > 0. This command will be sent to the server for processing. The client sits idle waiting for the server to complete the transaction.
+.br
+.sp
+.br
+The other command a client may recieve is a sleep command. It is defined as follows:
+.br
+S<n> Sleep. This command simulates having the client wait between receiving new
+transactions to process. The client waits for a time determined by integer parameter n, with n between 0 and 100.
+.SH EXAMPLES
+Start client to connect to ip-address 127.0.0.1 and port 5002:
+.br
+\[char46]/client 5002 127.0.0.1
+.br
+.sp
+.br
+Sample Input Once Connected:
+T80
+.br
+S90
+.br
+T100
+.SH OPTIONS
+No options
+.SH SEE ALSO
+socket(2) select(2) inet(3) client(7)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Raynard Dizon (rdizon@ualberta.ca)
