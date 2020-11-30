@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
 
 		if (monitor < 0) {
 			cout << "Error: Select error" << endl;
+			exit(EXIT_FAILURE);
 		} else if (monitor == 0) {
 			// Timeout has occured, exit the program
 			fflush(stdout);
