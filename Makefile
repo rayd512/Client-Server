@@ -2,7 +2,8 @@ CC=g++
 CFLAGS=-Wall -O -std=c++11
 
 
-all:client server pdf
+all:code pdf
+code: client server
 
 client: client.o tands.o
 	$(CC) -o client client.o tands.o
